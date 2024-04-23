@@ -1,77 +1,25 @@
 import { Configuration, OpenAIApi } from "openai-edge";
-import { Ratelimit } from "@upstash/ratelimit";
-import redis from "../../../utils/redis";
 import { OpenAIStream, StreamingTextResponse } from "ai";
-import { headers, cookies } from "next/headers";
-import { NextResponse } from "next/server";
 
-/* // REMOVE THIS IF YOU DON'T WANT RATE LIMITING
-// START
-const ratelimit = redis
-  ? new Ratelimit({
-      redis: redis,
-      limiter: Ratelimit.fixedWindow(5, "1440 m"),
-      analytics: true,
-    })
-  : undefined;
-
-// END
- */
-const config = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-const openai = new OpenAIApi(config);
+const apiKeysString = process.env.OPENAI_API_KEY_ARRAY || "";
+const keyArray = apiKeysString.split(',');
+const getNextApiKey = () => {
+	const now = new Date();
+	const seconds = Math.floor(now.getTime() / 1000);
+	let currentKeyIndex = seconds % keyArray.length;
+	let curKey = keyArray[currentKeyIndex];
+	console.info(`use key: ${curKey}, keyIndex: ${currentKeyIndex}`);
+	return curKey;
+};
 
 export const runtime = "edge";
 
 export async function POST(req: Request) {
-  const cookieStore = cookies();
-  /*   // REMOVE THIS IF YOU DON'T WANT RATE LIMITING
-  // START
-  if (ratelimit) {
-    const headersList = headers();
-    const ipIdentifier = headersList.get("x-real-ip");
-
-    const result = await ratelimit.limit(ipIdentifier ?? "");
-
-    if (!result.success) {
-      const fakeStream =
-        "Too many requests in 1 day. Please try again in a 24 hours. Thank you. 🙏";
-      return new Response(fakeStream, {
-        status: 429,
-        headers: {
-          "X-RateLimit-Limit": result.limit,
-          "X-RateLimit-Remaining": result.remaining,
-        } as any,
-      });
-    }
-  }
-  // END */
-
+  const config = new Configuration({
+	  apiKey: getNextApiKey(),
+  });
+  const openai = new OpenAIApi(config);
   const { messages } = await req.json();
-
-  // Implemented for to test the API
-
-  const sessionToken = cookieStore.get("sessionToken")?.value as string;
-
-  const storeMessage = await fetch(
-    "https://c3-na.altogic.com/e:64d52ccfc66bd54b97bdd78a/test",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Session: sessionToken,
-      },
-      body: JSON.stringify({ content: messages[0].content }),
-    },
-  );
-
-  const { credits } = await storeMessage.json();
-
-  if (credits === 0) {
-    return NextResponse.json({ code: "no-credits", credits });
-  }
 
   const systemPrompt = `You are a talented UI designer who needs help creating a clear and concise HTML UI using Tailwind CSS. The UI should be visually appealing and responsive. Please design a UI component that includes the following elements:
 
@@ -104,18 +52,19 @@ Remember to keep the design minimalistic, intuitive, and visually appealing. You
   let response;
   let stream;
 
-  response = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo-16k",
-    messages: combinedMessages.map((message: any) => ({
-      role: message.role,
-      content: message.content,
-    })),
-    stream: true,
-  });
+  do {
+    response = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo",
+      messages: combinedMessages.map((message: any) => ({
+        role: message.role,
+        content: message.content,
+      })),
+      stream: true,
+    });
 
-  stream = OpenAIStream(response);
-  // Continue generating the response if incomplete
+    stream = OpenAIStream(response);
+    // Continue generating the response if incomplete
+  } while (!stream.cancel);
 
-  // If rate limited, return a fake response
   return new StreamingTextResponse(stream);
 }

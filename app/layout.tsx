@@ -1,68 +1,47 @@
-import AuthModal from "@/components/AuthModal";
-import PricesModal from "@/components/PricesModal";
-import { AuthProvider } from "@/context/AuthContext";
-import { Project } from "@/types";
-import { fetchAuthUser, fetchProducts, getProjectByDomain } from "@/utils/auth";
-import { isAipage } from "@/utils/helpers";
-import { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { headers } from "next/headers";
-import { ReactNode } from "react";
-import "../styles/globals.css";
-const inter = Inter({ subsets: ["latin"] });
+import "./globals.css";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const isAipageDomain = isAipage(headers().get("Host") as string);
-  if (!isAipageDomain) {
-    const project = await getProjectByDomain(headers().get("Host") as string);
-    if (project) return {};
-  }
-
-  return {
-    title: "AIPage.dev - An AI-Powered Landing Page Generator | by @zinedkaloc",
-    description:
-      "AI-Powered Landing Page Generator. Experience the Open Source Project that Empowers You to Build Stunning Landing Pages Instantly",
-    openGraph: {
-      title:
-        "AIPage.dev - An AI-Powered Landing Page Generator | by @zinedkaloc",
-      description:
-        "AI-Powered Landing Page Generator. Experience the Open Source Project that Empowers You to Build Stunning Landing Pages Instantly",
-      type: "website",
-      url: "https://aipage.dev",
-      images: `${process.env.NEXT_PUBLIC_DOMAIN}/api/og?text=${new Date()
-        .getTime()
-        .toString()}`,
-    },
-  };
-}
-
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
-  children: ReactNode;
+  children: React.ReactNode;
 }) {
-  const isAipageDomain = isAipage(headers().get("Host") as string);
-  const user = await fetchAuthUser();
-  const products = await fetchProducts();
-  let project: Project | null = null;
-
-  if (!isAipageDomain) {
-    project = await getProjectByDomain(headers().get("Host") as string);
-  }
-
-  if (!isAipageDomain && project?.result) {
-    return require("html-react-parser")(project?.result);
-  }
-
+	const googleAnalyticsScript = `
+	    window.dataLayer = window.dataLayer || [];
+	    function gtag(){dataLayer.push(arguments);}
+	    gtag('js', new Date());
+	    gtag('config', 'G-9N537GX3BR');
+	  `;
+	
+	  const baiduAnalyticsScript = `
+	    var _hmt = _hmt || [];
+	    (function() {
+	      var hm = document.createElement("script");
+	      hm.src = "https://hm.baidu.com/hm.js?3a743f9ffe21e15c035a52ecfd7e3a97";
+	      var s = document.getElementsByTagName("script")[0];
+	      s.parentNode.insertBefore(hm, s);
+	    })();
+	  `;
   return (
-    <AuthProvider user={user ?? null}>
-      <html lang="en">
-        <body className={inter.className}>
-          {children}
-          <AuthModal />
-          <PricesModal products={products} />
-        </body>
-      </html>
-    </AuthProvider>
+    <html lang="en">
+	  <head>
+		 <title>AI Landing Page Generator - Free</title>
+		 <meta name="description" content="Free AI Landing Page Generator. Create landing page easily with AI."/>
+		 <meta name="viewport" content="width=device-width, initial-scale=1" />
+		 <meta name="keywords" content="AI Landing Page Generator,Free,OnLine" />
+		 <link rel="canonical" href="https://www.ailandingpagegenerator.com" />
+		 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		 {/* Google Analytics Script */}
+		 <script
+		   async
+		   src="https://www.googletagmanager.com/gtag/js?id=G-9N537GX3BR"
+		 ></script>
+		 <script dangerouslySetInnerHTML={{ __html: googleAnalyticsScript }} />
+		 {/* Baidu Analytics Script */}
+		 <script dangerouslySetInnerHTML={{ __html: baiduAnalyticsScript }} />
+		  {/* Plausible Analytics Script */}
+		  <script defer data-domain="ailandingpagegenerator.com" src="https://stat.re/js/script.js"></script>
+	  </head>
+      <body>{children}</body>
+    </html>
   );
 }

@@ -1,21 +1,32 @@
 # AI Landing Page Generator
 
+clone of [aipage.dev](https://github.com/zinedkaloc/aipage.dev)
+
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## Description
 
 ![A landing page generator](/public/logo.png)
 
+![1](README_files/1.jpg)
+
+![2](README_files/2.jpg)
+
 The AI Landing Page Generator is a powerful tool that allows you to quickly create stunning landing pages using artificial intelligence. With this generator, you can save time and effort by automating the process of designing and coding landing pages. It is now experimental and only supports the creation of landing pages with HTML and Tailwind CSS.
 
 ## Installation
 
-1. Clone the repository: `git clone https://github.com/zinedkaloc/aipage.dev.git`
+1. Clone the repository: `git clone https://github.com/JustAIGithub/AI-Landing-Page-Generator`
 2. Install the required dependencies: `pnpm install`
-3. Navigate to the project directory `cd aipage.dev`
+3. Navigate to the project directory `cd AI-Landing-Page-Generator`
 4. Copy the `.env.example` file to `.env` and fill in the required information.
 
-> Note: If you are not comfortable with creating OPENAI_API_KEY, please reach out to me at [zinedkaloc](https://twitter.com/zinedkaloc) and I will be happy to help you.
+> Note: If you are not comfortable with creating OPENAI_API_KEY_ARRAY, please reach out to me at [AUDI_GUZZ](https://twitter.com/AUDI_GUZZ) and I will be happy to help you.
+
+> Note: Support Multi Key
+```
+OPENAI_API_KEY_ARRAY="XXXXX,YYYYY"
+```
 
 ## Usage
 
@@ -66,4 +77,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Contact
 
-For any inquiries or feedback, please reach out to us at [zinedkaloc](https://twitter.com/zinedkaloc).
+For any inquiries or feedback, please reach out to us at [AUDI_GUZZ](https://twitter.com/AUDI_GUZZ).
